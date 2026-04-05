@@ -3,8 +3,8 @@ const axios = require('axios');
 const { db } = require('../db/database');
 
 // PhonePe config
-const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT';
-const SALT_KEY = process.env.PHONEPE_SALT_KEY || '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399';
+const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT86';
+const SALT_KEY = process.env.PHONEPE_SALT_KEY || '96434309-7796-489d-8924-ab56988a6076';
 const SALT_INDEX = process.env.PHONEPE_SALT_INDEX || '1';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
 
