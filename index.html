@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoEats Marketplace</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="navbar">
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <span class="logo-text">EcoEats</span>
+        </div>
+        <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" placeholder="Search for surplus food, cuisines, or kitchens...">
+        </div>
+        <div class="nav-actions">
+            <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+            <a href="dashboard.html" class="btn btn-primary" style="text-decoration:none;"><i class="fa-solid fa-shop"></i> Kitchen Dashboard</a>
+            <a href="track.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-solid fa-location-dot"></i> Track</a>
+            <div id="auth-buttons">
+                <a href="login.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-regular fa-user"></i> Login / Sign Up</a>
+            </div>
+            <div id="user-menu" style="display: none; align-items: center; gap: 15px;">
+                <a href="profile.html" id="user-name-display" style="font-weight: 600; text-decoration:none; color:inherit;"></a>
+                <button class="btn btn-outline" style="padding: 0.5rem;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+            <a href="wishlist.html" class="cart-icon" style="color: inherit; text-decoration: none;" title="My Wishlist">
+                <i class="fa-solid fa-heart"></i>
+            </a>
+            <a href="cart.html" class="cart-icon" style="color: inherit; text-decoration: none;">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="cart-badge" id="cart-count">0</span>
+            </a>
+        </div>
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+    </header>
+
+    <main class="container">
+        <!-- Browse by Cuisine Section -->
+        <section class="cuisine-section">
+            <h2 class="section-title">Browse by Cuisine</h2>
+            <div class="cuisine-scroll">
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80');">
+                    <span>Indian</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80');">
+                    <span>Healthy</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1563245372-f21724e3856d?w=400&q=80');">
+                    <span>Fast Food</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80');">
+                    <span>Italian</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&q=80');">
+                    <span>Chinese</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1528736235302-52922df5c122?w=400&q=80');">
+                    <span>Desserts</span>
+                </div>
+                <div class="cuisine-card" style="background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400&q=80');">
+                    <span>Beverages</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Surplus Deals Section -->
+        <section class="deals-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Surplus Deals Near You</h2>
+                    <p class="section-subtitle">Fresh meals at unbeatable prices</p>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <div class="veg-filter-bar">
+                        <button class="veg-filter-btn" id="filter-all" onclick="setVegFilter('all')" style="border-color:var(--primary-green);background:#E8F5E9;color:var(--primary-green);">All</button>
+                        <button class="veg-filter-btn" id="filter-veg" onclick="setVegFilter('veg')">🟢 Veg</button>
+                        <button class="veg-filter-btn" id="filter-nonveg" onclick="setVegFilter('nonveg')">🔴 Non-Veg</button>
+                    </div>
+                    <a href="#" class="view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
+                </div>
+            </div>
+
+            <div class="food-grid" id="standard-surplus-grid"></div>
+        </section>
+
+        <!-- Closing Soon Section -->
+        <section class="deals-section flash-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">🔥 Closing Soon – Flash Rescue Deals</h2>
+                    <p class="section-subtitle">Last chance to save these delicious meals</p>
+                </div>
+                <a href="#" class="view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+
+            <div class="food-grid" id="flash-surplus-grid">
+                <!-- Low Stock Card 1 -->
+                <div class="food-card">
+                    <div class="food-image" style="background-image: url('https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=80');">
+                        <div class="badge timer-badge urgent"><i class="fa-regular fa-clock"></i> 15m left</div>
+                        <div class="badge discount-badge">75% OFF</div>
+                    </div>
+                    <div class="food-details">
+                        <span class="kitchen-name">Sweet Corner Bakery</span>
+                        <h3 class="dish-name">Assorted Pastry Box</h3>
+                        <div class="price-row">
+                            <span class="current-price">₹80</span>
+                            <span class="original-price">₹320</span>
+                        </div>
+                        <div class="stock-action-row">
+                            <span class="stock-info low-stock"><i class="fa-solid fa-fire"></i> Only 2 left</span>
+                            <button class="btn btn-add"><i class="fa-solid fa-cart-plus"></i> Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Low Stock Card 2 -->
+                <div class="food-card">
+                    <div class="food-image" style="background-image: url('https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=80');">
+                        <div class="badge timer-badge urgent"><i class="fa-regular fa-clock"></i> 30m left</div>
+                        <div class="badge discount-badge">60% OFF</div>
+                    </div>
+                    <div class="food-details">
+                        <span class="kitchen-name">Wrap It Up</span>
+                        <h3 class="dish-name">Spicy Paneer Wrap</h3>
+                        <div class="price-row">
+                            <span class="current-price">₹60</span>
+                            <span class="original-price">₹150</span>
+                        </div>
+                        <div class="stock-action-row">
+                            <span class="stock-info low-stock"><i class="fa-solid fa-fire"></i> Only 1 left</span>
+                            <button class="btn btn-add"><i class="fa-solid fa-cart-plus"></i> Add</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Cloud Kitchens Section -->
+        <section class="kitchens-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">Featured Cloud Kitchens</h2>
+                    <p class="section-subtitle">Partner kitchens committed to reducing food waste</p>
+                </div>
+                <a href="#" class="view-all">View All <i class="fa-solid fa-chevron-right"></i></a>
+            </div>
+
+            <div class="kitchen-grid" id="featured-kitchens-grid">
+                <!-- Dynamically populated from JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="detailed-footer">
+        <div class="footer-container">
+            <!-- Column 1: Branding -->
+            <div class="footer-col brand-col">
+                <div class="logo footer-logo">
+                    <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+                    <span class="logo-text text-white">EcoEats</span>
+                </div>
+                <p class="footer-description">Save money, save the planet. Discover surplus food deals from local kitchens and reduce food waste together.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#"><i class="fa-brands fa-twitter"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+
+            <!-- Column 2: Quick Links -->
+            <div class="footer-col">
+                <h4 class="footer-heading">Quick Links</h4>
+                <ul class="footer-links">
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">How It Works</a></li>
+                    <li><a href="#">Partner Kitchens</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 3: Support -->
+            <div class="footer-col">
+                <h4 class="footer-heading">Support</h4>
+                <ul class="footer-links">
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">FAQs</a></li>
+                </ul>
+            </div>
+
+            <!-- Column 4: Contact Us -->
+            <div class="footer-col">
+                <h4 class="footer-heading">Contact Us</h4>
+                <ul class="footer-contact">
+                    <li><i class="fa-regular fa-envelope"></i> support@ecoeats.com</li>
+                    <li><i class="fa-solid fa-phone"></i> +91 1800-123-4567</li>
+                    <li><i class="fa-solid fa-location-dot"></i> Bangalore, India</li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+
+
+
+    <script src="script.js"></script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+

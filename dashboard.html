@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Dashboard - EcoEats</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; display: flex; min-height: 100vh; background: #F5F7FA; }
+
+        /* Login Overlay */
+        .login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 999; }
+        .login-box { background: var(--card-bg); padding: 2.5rem; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .login-box h2 { margin: 0 0 0.3rem; font-size: 1.5rem; }
+        .login-box p { color: var(--text-secondary); margin: 0 0 1.5rem; font-size: 0.9rem; }
+        .login-box .form-group { margin-bottom: 1rem; }
+        .login-box label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.3rem; }
+        .login-box input { width: 100%; padding: 0.7rem 1rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .login-box input:focus { border-color: var(--primary-green); outline: none; }
+        .login-box .error-msg { color: #EF4444; font-size: 0.9rem; margin-bottom: 0.5rem; display: none; }
+        .login-box button { width: 100%; padding: 0.8rem; background: var(--primary-green); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        .login-box .back-link { text-align: center; margin-top: 1rem; }
+        .login-box .back-link a { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--card-bg); border-right: 1px solid var(--border-color); padding: 2rem 0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 100; }
+        .sidebar-brand { padding: 0 1.5rem 2rem; display: flex; align-items: center; gap: 0.8rem; }
+        .sidebar-brand .logo-icon { background: var(--primary-green); color: #fff; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .sidebar-brand span { font-weight: 700; font-size: 1.1rem; }
+        .sidebar-brand small { display: block; font-size: 0.75rem; color: var(--text-secondary); font-weight: 400; }
+        .sidebar-nav { flex: 1; }
+        .sidebar-nav a { display: flex; align-items: center; gap: 0.8rem; padding: 0.9rem 1.5rem; color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: all 0.2s; border-left: 3px solid transparent; }
+        .sidebar-nav a:hover { background: #F0FAF0; color: var(--primary-green); }
+        .sidebar-nav a.active { background: #E8F5E9; color: var(--primary-green); border-left-color: var(--primary-green); font-weight: 600; }
+        .sidebar-nav a i { width: 20px; text-align: center; }
+        .sidebar-bottom { padding: 1.5rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.8rem; }
+        .sidebar-bottom a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+
+        .dashboard-main { margin-left: 260px; flex: 1; padding: 2rem 2.5rem; }
+        .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .dash-greeting h1 { font-size: 1.8rem; margin: 0; }
+        .dash-greeting p { color: var(--text-secondary); margin: 0.3rem 0 0; }
+        .dash-profile { display: flex; align-items: center; gap: 1rem; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card-bg); border-radius: 16px; padding: 1.5rem 2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; }
+        .stat-card h4 { color: var(--text-secondary); font-weight: 500; font-size: 0.9rem; margin: 0 0 0.3rem; }
+        .stat-card .stat-num { font-size: 2rem; font-weight: 700; margin: 0; }
+        .stat-card .stat-growth { font-size: 0.8rem; color: var(--primary-green); margin-top: 0.3rem; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .stat-icon.green { background: #E8F5E9; color: var(--primary-green); }
+        .stat-icon.blue { background: #E3F2FD; color: #2196F3; }
+        .stat-icon.orange { background: #FFF3E0; color: #FF9800; }
+
+        .dash-section { background: var(--card-bg); border-radius: 16px; padding: 1.5rem 2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.04); margin-bottom: 1.5rem; }
+        .dash-section h3 { margin: 0 0 1rem; font-size: 1.1rem; }
+        .expiry-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #F3F4F6; }
+        .expiry-item:last-child { border-bottom: none; }
+        .expiry-badge { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 600; }
+        .expiry-badge.urgent { background: #FEE2E2; color: #EF4444; }
+        .expiry-badge.warning { background: #FFF7ED; color: #F97316; }
+        .order-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #F3F4F6; }
+        .order-row:last-child { border-bottom: none; }
+        .order-status { font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: 999px; font-weight: 600; }
+        .order-status.confirmed { background: #EFF6FF; color: #3B82F6; }
+        .order-status.delivered { background: #E8F5E9; color: #10B981; }
+
+        .add-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .add-form .full-span { grid-column: 1 / -1; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <!-- LOGIN OVERLAY -->
+    <div class="login-overlay" id="login-overlay">
+        <div class="login-box">
+            <div style="display:flex; align-items:center; gap:0.8rem; margin-bottom:1rem;">
+                <div style="background:var(--primary-green); color:#fff; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;"><i class="fa-solid fa-leaf"></i></div>
+                <div>
+                    <h2>Kitchen Login</h2>
+                    <p style="margin:0;">Access your restaurant dashboard</p>
+                </div>
+            </div>
+            <div class="error-msg" id="login-error"></div>
+            <form onsubmit="kitchenLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="k-username" placeholder="e.g. spicegarden" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="k-password" placeholder="Enter password" required>
+                </div>
+                <button type="submit"><i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard</button>
+            </form>
+            <div class="back-link"><a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Marketplace</a></div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar" style="display:none;">
+        <div class="sidebar-brand">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <div>
+                <span>EcoEats</span>
+                <small>Kitchen Dashboard</small>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" data-tab="overview" onclick="showTab(event,'overview')"><i class="fa-solid fa-grip"></i> Overview</a>
+            <a href="#" data-tab="add-food" onclick="showTab(event,'add-food')"><i class="fa-solid fa-plus"></i> Add Surplus Food</a>
+            <a href="#" data-tab="listings" onclick="showTab(event,'listings')"><i class="fa-solid fa-list"></i> Active Listings</a>
+            <a href="#" data-tab="orders" onclick="showTab(event,'orders')"><i class="fa-solid fa-bag-shopping"></i> Orders</a>
+        </nav>
+        <div class="sidebar-bottom">
+            <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Back to Marketplace</a>
+            <a href="#" onclick="kitchenLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="dashboard-main" id="dashboard-main" style="display:none;">
+        <div class="dash-header">
+            <div class="dash-greeting">
+                <h1 id="greeting-text">Good Morning, Chef! 👨‍🍳</h1>
+                <p>Here's what's happening with your kitchen today</p>
+            </div>
+            <div class="dash-profile">
+                <div style="text-align:right;">
+                    <strong id="dash-kitchen-name"></strong>
+                    <small style="display:block; color:var(--text-secondary); font-size:0.8rem;">Kitchen Owner</small>
+                </div>
+                <div class="profile-avatar" id="dash-avatar">S</div>
+            </div>
+        </div>
+
+        <!-- OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div><h4>Total Surplus Items</h4><p class="stat-num" id="stat-items">0</p><p class="stat-growth"><i class="fa-solid fa-layer-group"></i> Active listings</p></div>
+                    <div class="stat-icon green"><i class="fa-solid fa-layer-group"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div><h4>Total Orders</h4><p class="stat-num" id="stat-orders">0</p><p class="stat-growth"><i class="fa-solid fa-bag-shopping"></i> From customers</p></div>
+                    <div class="stat-icon blue"><i class="fa-solid fa-bag-shopping"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div><h4>Revenue</h4><p class="stat-num" id="stat-revenue">₹0</p><p class="stat-growth"><i class="fa-solid fa-indian-rupee-sign"></i> Total earned</p></div>
+                    <div class="stat-icon orange"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+                </div>
+            </div>
+            <div class="dash-section"><h3><i class="fa-solid fa-clock" style="color:#F97316;"></i> Your Items Expiring Soon</h3><div id="expiring-list"></div></div>
+            <div class="dash-section"><h3><i class="fa-solid fa-receipt" style="color:#3B82F6;"></i> Your Recent Orders</h3><div id="recent-orders"></div></div>
+        </div>
+
+        <!-- ADD FOOD -->
+        <div id="tab-add-food" class="tab-content">
+            <div class="dash-section">
+                <h3><i class="fa-solid fa-plus-circle" style="color:var(--primary-green);"></i> Add New Surplus Food</h3>
+                <form class="add-form" onsubmit="addItem(event)">
+                    <div><label style="font-weight:600; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Food Name</label><input type="text" id="add-name" class="auth-input" placeholder="e.g. Chicken Biryani" required style="width:100%;box-sizing:border-box;"></div>
+                    <div><label style="font-weight:600; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Original Price (₹)</label><input type="number" id="add-price" class="auth-input" placeholder="350" required style="width:100%;box-sizing:border-box;"></div>
+                    <div><label style="font-weight:600; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Quantity</label><input type="number" id="add-qty" class="auth-input" placeholder="10" required style="width:100%;box-sizing:border-box;"></div>
+                    <div><label style="font-weight:600; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Closing Time (mins from now)</label><input type="number" id="add-closing" class="auth-input" placeholder="60" required style="width:100%;box-sizing:border-box;"></div>
+                    <div class="full-span"><label style="font-weight:600; font-size:0.85rem; margin-bottom:0.3rem; display:block;">Image URL (optional)</label><input type="url" id="add-image" class="auth-input" placeholder="https://..." style="width:100%;box-sizing:border-box;"></div>
+                    <div class="full-span"><button type="submit" style="width:100%; padding:0.8rem; background:#FF5722; color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer;"><i class="fa-solid fa-plus"></i> Mark as Surplus Deal</button></div>
+                </form>
+                <p id="add-result" style="margin-top:1rem; font-weight:600;"></p>
+            </div>
+        </div>
+
+        <!-- LISTINGS -->
+        <div id="tab-listings" class="tab-content">
+            <div class="dash-section"><h3><i class="fa-solid fa-list" style="color:var(--primary-green);"></i> Your Active Listings</h3><div id="active-listings"></div></div>
+        </div>
+
+        <!-- ORDERS -->
+        <div id="tab-orders" class="tab-content">
+            <div class="dash-section"><h3><i class="fa-solid fa-bag-shopping" style="color:#3B82F6;"></i> Your Orders</h3><div id="all-orders"></div></div>
+        </div>
+    </main>
+
+    <script>
+    let kitchenToken = localStorage.getItem('ecoeats_kitchen_token');
+    let kitchenData = JSON.parse(localStorage.getItem('ecoeats_kitchen') || 'null');
+
+    // Greeting
+    const hour = new Date().getHours();
+    document.getElementById('greeting-text').innerText =
+        `${hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening'}, Chef! 👨‍🍳`;
+
+    // Check if already logged in
+    if (kitchenToken && kitchenData) {
+        showDashboard();
+    }
+
+    async function kitchenLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('k-username').value;
+        const password = document.getElementById('k-password').value;
+        try {
+            const res = await fetch('http://localhost:5000/api/kitchen-dash/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                kitchenToken = data.token;
+                kitchenData = data.kitchen;
+                localStorage.setItem('ecoeats_kitchen_token', kitchenToken);
+                localStorage.setItem('ecoeats_kitchen', JSON.stringify(kitchenData));
+                showDashboard();
+            } else {
+                const err = document.getElementById('login-error');
+                err.innerText = data.error; err.style.display = 'block';
+            }
+        } catch (err) {
+            document.getElementById('login-error').innerText = 'Server not reachable';
+            document.getElementById('login-error').style.display = 'block';
+        }
+    }
+
+    function showDashboard() {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('sidebar').style.display = 'flex';
+        document.getElementById('dashboard-main').style.display = 'block';
+        document.getElementById('dash-kitchen-name').innerText = kitchenData.name;
+        document.getElementById('dash-avatar').innerText = kitchenData.name.charAt(0);
+        loadOverview();
+    }
+
+    function kitchenLogout() {
+        localStorage.removeItem('ecoeats_kitchen_token');
+        localStorage.removeItem('ecoeats_kitchen');
+        window.location.reload();
+    }
+
+    function showTab(e, tab) {
+        e.preventDefault();
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        e.target.closest('a').classList.add('active');
+        if (tab === 'overview') loadOverview();
+        if (tab === 'listings') loadListings();
+        if (tab === 'orders') loadOrders();
+    }
+
+    const kHeaders = () => ({ 'Authorization': `Bearer ${kitchenToken}`, 'Content-Type': 'application/json' });
+
+    async function loadOverview() {
+        try {
+            const [statsRes, itemsRes, ordersRes] = await Promise.all([
+                fetch('http://localhost:5000/api/kitchen-dash/stats', { headers: kHeaders() }),
+                fetch('http://localhost:5000/api/kitchen-dash/items', { headers: kHeaders() }),
+                fetch('http://localhost:5000/api/kitchen-dash/orders', { headers: kHeaders() })
+            ]);
+            const stats = await statsRes.json();
+            const items = await itemsRes.json();
+            const orders = await ordersRes.json();
+
+            document.getElementById('stat-items').innerText = stats.totalItems;
+            document.getElementById('stat-orders').innerText = stats.totalOrders;
+            document.getElementById('stat-revenue').innerText = `₹${Math.round(stats.totalRevenue).toLocaleString()}`;
+
+            // Expiring
+            const now = new Date();
+            let expHtml = '';
+            items.sort((a, b) => new Date(a.closing_time) - new Date(b.closing_time));
+            items.forEach(item => {
+                const diff = (new Date(item.closing_time) - now) / 60000;
+                if (diff > 0) {
+                    const badge = diff <= 30 ? 'urgent' : diff <= 60 ? 'warning' : '';
+                    const timeStr = diff < 60 ? `${Math.round(diff)}m` : `${Math.floor(diff/60)}h ${Math.round(diff%60)}m`;
+                    expHtml += `<div class="expiry-item"><div><strong>${item.food_name}</strong><span style="color:var(--text-secondary); font-size:0.85rem;"> &bull; ${item.quantity} left &bull; ₹${item.original_price}</span></div>
+                    <div>${badge ? `<span class="expiry-badge ${badge}">${timeStr}</span>` : `<span style="font-size:0.8rem; color:var(--text-secondary);">${timeStr}</span>`}</div></div>`;
+                }
+            });
+            document.getElementById('expiring-list').innerHTML = expHtml || '<p style="color:var(--text-secondary);">No items listed.</p>';
+
+            // Orders
+            let ordHtml = '';
+            orders.slice(0, 10).forEach(o => {
+                const statusClass = o.status === 'confirmed' ? 'confirmed' : 'delivered';
+                ordHtml += `<div class="order-row"><div><strong>#ECO-${1000 + o.id}</strong><span style="color:var(--text-secondary); font-size:0.85rem;"> &bull; ${o.customer_name || 'Guest'} &bull; ₹${Math.round(o.total_price)}</span></div>
+                <span class="order-status ${statusClass}">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span></div>`;
+            });
+            document.getElementById('recent-orders').innerHTML = ordHtml || '<p style="color:var(--text-secondary);">No orders yet.</p>';
+        } catch (e) { console.error(e); }
+    }
+
+    async function loadListings() {
+        const res = await fetch('http://localhost:5000/api/kitchen-dash/items', { headers: kHeaders() });
+        const items = await res.json();
+        const now = new Date();
+        let html = '';
+        items.forEach(item => {
+            const diff = (new Date(item.closing_time) - now) / 60000;
+            const timeStr = diff > 0 ? (diff < 60 ? `${Math.round(diff)}m left` : `${Math.floor(diff/60)}h ${Math.round(diff%60)}m left`) : 'Expired';
+            
+            html += `<div class="expiry-item" style="flex-wrap: wrap; gap: 0.5rem;">
+                <div style="flex: 1; min-width: 200px;">
+                    <strong>${item.food_name}</strong>
+                    <div style="display:flex; align-items:center; gap:0.5rem; margin-top:0.3rem;">
+                        <span style="color:var(--text-secondary); font-size:0.85rem;">Qty: </span>
+                        <button class="btn btn-outline" style="padding:0.2rem 0.5rem;" onclick="updateQuantity(${item.id}, ${item.quantity - 1})">−</button>
+                        <strong>${item.quantity}</strong>
+                        <button class="btn btn-outline" style="padding:0.2rem 0.5rem;" onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        <button class="btn btn-outline" style="padding:0.2rem 0.5rem; margin-left:0.5rem; color:var(--primary-green); border-color:var(--primary-green);" onclick="updateQuantity(${item.id}, ${item.quantity + 10})">+10</button>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <strong style="color:var(--primary-green);">₹${item.original_price}</strong>
+                    <span class="expiry-badge ${diff <= 30 ? 'urgent' : 'warning'}">${timeStr}</span>
+                </div>
+            </div>`;
+        });
+        document.getElementById('active-listings').innerHTML = html || '<p style="color:var(--text-secondary);">No active listings.</p>';
+    }
+
+    async function updateQuantity(itemId, newQty) {
+        if (newQty < 0) return;
+        try {
+            const res = await fetch(`http://localhost:5000/api/kitchen-dash/items/${itemId}`, {
+                method: 'PUT',
+                headers: kHeaders(),
+                body: JSON.stringify({ quantity: newQty })
+            });
+            if (res.ok) {
+                loadListings();
+                loadOverview(); // Update overview stats too
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Failed to update quantity');
+            }
+        } catch (e) {
+            alert('Server error.');
+        }
+    }
+
+    async function loadOrders() {
+        const res = await fetch('http://localhost:5000/api/kitchen-dash/orders', { headers: kHeaders() });
+        const orders = await res.json();
+        let html = '';
+        orders.forEach(o => {
+            const date = new Date(o.order_time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+            html += `<div class="order-row"><div><strong>#ECO-${1000 + o.id}</strong><span style="color:var(--text-secondary); font-size:0.85rem;"> &bull; ${o.customer_name || 'Guest'} &bull; ${date}</span></div>
+            <div style="display:flex; align-items:center; gap:1rem;"><strong>₹${Math.round(o.total_price)}</strong><span class="order-status ${o.status === 'confirmed' ? 'confirmed' : 'delivered'}">${o.status}</span></div></div>`;
+        });
+        document.getElementById('all-orders').innerHTML = html || '<p style="color:var(--text-secondary);">No orders yet.</p>';
+    }
+
+    async function addItem(e) {
+        e.preventDefault();
+        const data = {
+            kitchen_id: kitchenData.id,
+            food_name: document.getElementById('add-name').value,
+            original_price: parseFloat(document.getElementById('add-price').value),
+            quantity: parseInt(document.getElementById('add-qty').value),
+            closing_time: new Date(Date.now() + parseInt(document.getElementById('add-closing').value) * 60000).toISOString(),
+            image_url: document.getElementById('add-image').value || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'
+        };
+        try {
+            const res = await fetch('http://localhost:5000/api/surplus', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+            });
+            if (res.ok) {
+                document.getElementById('add-result').innerText = '✅ Surplus item added!';
+                document.getElementById('add-result').style.color = 'var(--primary-green)';
+                e.target.reset();
+            } else {
+                document.getElementById('add-result').innerText = '❌ Failed to add item';
+                document.getElementById('add-result').style.color = 'red';
+            }
+        } catch (err) {
+            document.getElementById('add-result').innerText = '❌ Server error';
+            document.getElementById('add-result').style.color = 'red';
+        }
+    }
+    </script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+

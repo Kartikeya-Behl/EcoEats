@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - EcoEats</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-container { max-width: 800px; margin: 2rem auto; padding: 0 5%; }
+        .profile-card { background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); margin-bottom: 2rem; }
+        .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem; }
+        .avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--primary-green); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.8rem; font-weight: 700; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--card-bg); border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow-sm); }
+        .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--primary-green); }
+        .stat-label { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.3rem; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
+        .order-item:last-child { border-bottom: none; }
+        .addr-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--border-color); }
+        .addr-item:last-child { border-bottom: none; }
+        .add-addr-form { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+        .add-addr-form input { flex: 1; min-width: 120px; }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo" style="text-decoration:none;">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <span class="logo-text">EcoEats</span>
+        </a>
+        <div class="nav-actions">
+            <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+            <a href="index.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="track.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-solid fa-location-dot"></i> Track</a>
+            <button class="btn btn-outline" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </header>
+
+    <div class="profile-container">
+        <!-- User Info Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="avatar" id="avatar-initial">?</div>
+                <div>
+                    <h2 id="profile-name">Loading...</h2>
+                    <p style="color:var(--text-secondary);" id="profile-email"></p>
+                    <p style="color:var(--text-secondary); font-size:0.85rem;" id="profile-since"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-orders">0</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-saved">₹0</div>
+                <div class="stat-label">Total Saved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-spent">₹0</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+        </div>
+
+        <!-- Saved Addresses -->
+        <div class="profile-card">
+            <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-location-dot" style="color:var(--primary-green);"></i> Saved Addresses</h3>
+            <div id="address-list"></div>
+            
+            <h4 style="margin-top:1.5rem; margin-bottom:0.8rem;">Add New Address</h4>
+            <div class="add-addr-form" style="display:flex; flex-direction:column; gap:0.5rem; max-width:400px;">
+                <input type="text" id="addr-label" class="auth-input full-width" placeholder="Label (e.g. Home, Office)">
+                
+                <div style="position:relative;">
+                    <input type="text" id="addr-search" class="auth-input full-width" placeholder="Search real address (e.g. Koramangala)" oninput="searchAddress()">
+                    <div id="addr-results" style="position:absolute; top:100%; left:0; right:0; background: var(--card-bg); border:1px solid var(--border-color); border-radius:8px; max-height:200px; overflow-y:auto; z-index:10; display:none; box-shadow:var(--shadow-md);"></div>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    <input type="button" class="btn btn-outline" style="flex:1; padding:0.6rem; justify-content:center;" value="📍 Use Current Location" onclick="useMyLocation()">
+                    <button class="btn btn-primary" style="flex:1; padding:0.6rem;" onclick="saveAddress()"><i class="fa-solid fa-plus"></i> Save Address</button>
+                </div>
+                
+                <p id="addr-status" style="font-size:0.85rem; color:var(--text-secondary); margin:0;"></p>
+                <input type="hidden" id="addr-address">
+                <input type="hidden" id="addr-lat">
+                <input type="hidden" id="addr-lng">
+            </div>
+        </div>
+
+        <!-- Order History -->
+        <div class="profile-card">
+            <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-clock-rotate-left" style="color:var(--primary-green);"></i> Order History</h3>
+            <div id="order-history"></div>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="profile-card">
+            <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-gear" style="color:var(--primary-green);"></i> Account Settings</h3>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <strong>Change Password</strong>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Update your account password</p>
+                </div>
+                <button class="btn btn-outline" id="btn-show-pwd" onclick="document.getElementById('pwd-form').style.display='block'; this.style.display='none';">Update</button>
+            </div>
+            
+            <div id="pwd-form" style="display: none; margin-bottom: 1.5rem; background: var(--bg-color); padding: 1rem; border-radius: 8px;">
+                <input type="password" id="cp-old" class="auth-input full-width" placeholder="Current Password" style="margin-bottom:0.5rem; width:100%; padding:0.7rem; border:1px solid var(--border-color); border-radius:8px; outline:none; box-sizing:border-box;">
+                <input type="password" id="cp-new" class="auth-input full-width" placeholder="New Password (min 6 chars)" style="margin-bottom:0.5rem; width:100%; padding:0.7rem; border:1px solid var(--border-color); border-radius:8px; outline:none; box-sizing:border-box;">
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-primary" onclick="changePassword()">Save New Password</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('pwd-form').style.display='none'; document.getElementById('btn-show-pwd').style.display='block';">Cancel</button>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong style="color: #DC2626;">Delete Account</strong>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0;">Permanently remove your account and data</p>
+                </div>
+                <button class="btn btn-outline" style="border-color: #DC2626; color: #DC2626;" id="btn-show-del" onclick="document.getElementById('del-form').style.display='block'; this.style.display='none';">Delete</button>
+            </div>
+
+            <div id="del-form" style="display: none; margin-top: 1rem; background: #FEF2F2; border: 1px solid #FCA5A5; padding: 1rem; border-radius: 8px;">
+                <p style="color: #DC2626; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight:600;">This action cannot be undone.</p>
+                <input type="password" id="del-pwd" class="auth-input full-width" placeholder="Confirm your password to delete" style="margin-bottom:0.8rem; width:100%; padding:0.7rem; border:1px solid #FCA5A5; border-radius:8px; outline:none; box-sizing:border-box;">
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn btn-outline" style="background:#DC2626; color:#fff; border:none;" onclick="confirmDeleteAccount()">Yes, Delete My Account</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('del-form').style.display='none'; document.getElementById('btn-show-del').style.display='block';">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('ecoeats_token');
+        if (!token) window.location.href = 'login.html';
+
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Profile info
+            try {
+                const res = await fetch('http://localhost:5000/api/auth/me', { headers });
+                const user = await res.json();
+                document.getElementById('profile-name').innerText = user.name;
+                document.getElementById('profile-email').innerText = user.email;
+                document.getElementById('avatar-initial').innerText = user.name.charAt(0).toUpperCase();
+                if (user.created_at) {
+                    document.getElementById('profile-since').innerText = 'Member since ' + new Date(user.created_at).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+                }
+            } catch (e) { console.error(e); }
+
+            // Orders
+            try {
+                const res = await fetch('http://localhost:5000/api/orders/my-orders', { headers });
+                const orders = await res.json();
+                document.getElementById('stat-orders').innerText = orders.length;
+                let totalSaved = 0, totalSpent = 0;
+                let html = '';
+                orders.forEach(o => {
+                    totalSpent += o.total_price;
+                    totalSaved += (o.original_total || 0) - o.total_price;
+                    const date = new Date(o.order_time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                    html += `<div class="order-item">
+                        <div>
+                            <strong>Order #${o.id}</strong>
+                            <p style="color:var(--text-secondary);font-size:0.85rem;">${date} &bull; ${o.delivery_address}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <strong style="color:var(--primary-green);">₹${Math.round(o.total_price)}</strong>
+                            <p style="font-size:0.8rem;color:var(--text-secondary);">${o.status}</p>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('stat-saved').innerText = `₹${Math.max(0, Math.round(totalSaved))}`;
+                document.getElementById('stat-spent').innerText = `₹${Math.round(totalSpent)}`;
+                document.getElementById('order-history').innerHTML = html || '<p style="color:var(--text-secondary); text-align:center;">No orders yet.</p>';
+            } catch (e) { console.error(e); }
+
+            loadAddresses();
+        });
+
+        async function loadAddresses() {
+            try {
+                const res = await fetch('http://localhost:5000/api/addresses', { headers });
+                const addrs = await res.json();
+                let html = '';
+                addrs.forEach(a => {
+                    html += `<div class="addr-item">
+                        <div><strong>${a.label}</strong><br><span style="color:var(--text-secondary); font-size:0.85rem;">${a.address}</span></div>
+                        <button class="btn btn-outline" style="padding:0.3rem 0.6rem;" onclick="deleteAddr(${a.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+                });
+                document.getElementById('address-list').innerHTML = html || '<p style="color:var(--text-secondary);">No saved addresses yet.</p>';
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Nominatim Address Search ---
+        let searchTimeout;
+        async function searchAddress() {
+            const query = document.getElementById('addr-search').value;
+            const resultsBox = document.getElementById('addr-results');
+            
+            if (query.length < 3) {
+                resultsBox.style.display = 'none';
+                return;
+            }
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Bangalore, India')}&limit=5`);
+                    const data = await res.json();
+                    
+                    if (data.length > 0) {
+                        resultsBox.innerHTML = data.map(place => `
+                            <div style="padding:0.7rem 1rem; cursor:pointer; border-bottom:1px solid #eee; font-size:0.9rem;" 
+                                 onclick="selectAddress('${place.display_name.replace(/'/g, "\\'")}', ${place.lat}, ${place.lon})"
+                                 onmouseover="this.style.background='#F0F9F0'" onmouseout="this.style.background='white'">
+                                ${place.display_name}
+                            </div>
+                        `).join('');
+                        resultsBox.style.display = 'block';
+                    } else {
+                        resultsBox.innerHTML = '<div style="padding:0.7rem 1rem; color:#666; font-size:0.9rem;">No results found</div>';
+                        resultsBox.style.display = 'block';
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 500);
+        }
+
+        function selectAddress(name, lat, lng) {
+            document.getElementById('addr-search').value = name;
+            document.getElementById('addr-address').value = name;
+            document.getElementById('addr-lat').value = lat;
+            document.getElementById('addr-lng').value = lng;
+            document.getElementById('addr-results').style.display = 'none';
+            document.getElementById('addr-status').innerText = '✅ Location selected';
+            document.getElementById('addr-status').style.color = 'var(--primary-green)';
+        }
+
+        function useMyLocation() {
+            const status = document.getElementById('addr-status');
+            status.innerText = 'Locating...';
+            status.style.color = 'var(--text-secondary)';
+
+            if (!navigator.geolocation) {
+                status.innerText = 'Geolocation is not supported by your browser';
+                status.style.color = 'red';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                    const data = await res.json();
+                    selectAddress(data.display_name, lat, lng);
+                } catch (e) {
+                    status.innerText = 'Could not fetch address name';
+                    status.style.color = 'red';
+                }
+            }, () => {
+                status.innerText = 'Unable to retrieve your location';
+                status.style.color = 'red';
+            });
+        }
+
+        async function saveAddress() {
+            const label = document.getElementById('addr-label').value;
+            const address = document.getElementById('addr-address').value;
+            const lat = document.getElementById('addr-lat').value;
+            const lng = document.getElementById('addr-lng').value;
+            
+            if (!label || !address || !lat || !lng) {
+                alert('Please search and select a valid location first, and provide a label.');
+                return;
+            }
+            
+            await fetch('http://localhost:5000/api/addresses', { 
+                method: 'POST', 
+                headers, 
+                body: JSON.stringify({ label, address, lat: parseFloat(lat), lng: parseFloat(lng) }) 
+            });
+            
+            document.getElementById('addr-label').value = '';
+            document.getElementById('addr-search').value = '';
+            document.getElementById('addr-address').value = '';
+            document.getElementById('addr-lat').value = '';
+            document.getElementById('addr-lng').value = '';
+            document.getElementById('addr-status').innerText = '';
+            
+            loadAddresses();
+        }
+
+        async function deleteAddr(id) {
+            await fetch(`http://localhost:5000/api/addresses/${id}`, { method: 'DELETE', headers });
+            loadAddresses();
+        }
+
+        function doLogout() {
+            localStorage.removeItem('ecoeats_token');
+            localStorage.removeItem('ecoeats_user');
+            window.location.href = 'login.html';
+        }
+
+        async function changePassword() {
+            const old_password = document.getElementById('cp-old').value;
+            const new_password = document.getElementById('cp-new').value;
+
+            if (!old_password || !new_password) return alert('Please enter both passwords.');
+            if (new_password.length < 6) return alert('New password must be at least 6 characters.');
+
+            try {
+                const res = await fetch('http://localhost:5000/api/auth/change-password', {
+                    method: 'PUT',
+                    headers: headers,
+                    body: JSON.stringify({ old_password, new_password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Password changed successfully!');
+                    document.getElementById('cp-old').value = '';
+                    document.getElementById('cp-new').value = '';
+                    document.getElementById('pwd-form').style.display='none';
+                    document.getElementById('btn-show-pwd').style.display='block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (e) {
+                alert('Server error.');
+            }
+        }
+
+        async function confirmDeleteAccount() {
+            const pwd = document.getElementById('del-pwd').value;
+            if (!pwd) return alert("Please enter your password to confirm.");
+
+            try {
+                const res = await fetch('http://localhost:5000/api/auth/delete-account', {
+                    method: 'DELETE',
+                    headers: headers,
+                    body: JSON.stringify({ password: pwd })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    alert("Account successfully deleted.");
+                    doLogout();
+                } else {
+                    alert("Error: " + (data.error || "Could not delete account."));
+                }
+            } catch (e) {
+                alert("Server error.");
+            }
+        }
+    </script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+
+

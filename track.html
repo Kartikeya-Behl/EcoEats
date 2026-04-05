@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Order - EcoEats</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { width: 100%; height: 50vh; border-radius: 16px; margin-bottom: 1.5rem; }
+        .track-container { max-width: 800px; margin: 2rem auto; padding: 0 5%; }
+        .stepper { display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; }
+        .stepper::before { content: ''; position: absolute; top: 18px; left: 10%; right: 10%; height: 3px; background: var(--border-color); z-index: 0; }
+        .step { text-align: center; z-index: 1; flex: 1; }
+        .step-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.5rem; font-size: 1rem; color: #fff; transition: background 0.3s; }
+        .step.active .step-icon { background: var(--primary-green); }
+        .step.active .step-label { color: var(--primary-green); font-weight: 600; }
+        .step-label { font-size: 0.8rem; color: var(--text-secondary); }
+        .track-info { background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); }
+        .track-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .track-eta { font-size: 2.5rem; font-weight: 700; color: var(--primary-green); }
+        .no-order { text-align: center; padding: 4rem 2rem; color: var(--text-secondary); }
+        .no-order i { font-size: 3rem; margin-bottom: 1rem; display: block; }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo" style="text-decoration:none;">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <span class="logo-text">EcoEats</span>
+        </a>
+        <div class="nav-actions">
+            <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+            <a href="index.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="profile.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-regular fa-user"></i> Profile</a>
+        </div>
+    </header>
+
+    <div class="track-container">
+        <h2 class="section-title" style="margin-bottom:1.5rem;">Track Your Order</h2>
+
+        <div id="no-order" class="no-order" style="display:none;">
+            <i class="fa-solid fa-box-open"></i>
+            <h3>No Active Order</h3>
+            <p>Place an order from the marketplace to start tracking!</p>
+            <a href="index.html" class="btn btn-primary" style="display:inline-flex; margin-top:1rem; text-decoration:none;">Browse Deals</a>
+        </div>
+
+        <div id="order-content" style="display:none;">
+            <div id="map"></div>
+
+            <div class="stepper">
+                <div class="step active" id="step-confirmed">
+                    <div class="step-icon"><i class="fa-solid fa-check"></i></div>
+                    <span class="step-label">Confirmed</span>
+                </div>
+                <div class="step" id="step-preparing">
+                    <div class="step-icon"><i class="fa-solid fa-fire-burner"></i></div>
+                    <span class="step-label">Preparing</span>
+                </div>
+                <div class="step" id="step-onway">
+                    <div class="step-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                    <span class="step-label">On the Way</span>
+                </div>
+                <div class="step" id="step-delivered">
+                    <div class="step-icon"><i class="fa-solid fa-house-flag"></i></div>
+                    <span class="step-label">Delivered</span>
+                </div>
+            </div>
+
+            <div class="track-info">
+                <div class="track-row">
+                    <div>
+                        <p style="color:var(--text-secondary); font-size:0.9rem;">Estimated Arrival</p>
+                        <div class="track-eta" id="track-eta">--:--</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <p style="color:var(--text-secondary); font-size:0.9rem;">Delivering to</p>
+                        <strong id="track-address" style="font-size:0.95rem;"></strong>
+                    </div>
+                </div>
+                <div id="track-items" style="border-top:1px solid var(--border-color); padding-top:1rem; margin-top:0.5rem;"></div>
+                <div id="track-payment" style="margin-top:0.8rem; font-size:0.9rem; color:var(--text-secondary);"></div>
+            </div>
+
+            <!-- Delivery Driver Card -->
+            <div class="track-info" id="driver-card" style="margin-top:1.5rem; display:none;">
+                <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-motorcycle" style="color:var(--primary-green);"></i> Your Delivery Partner</h3>
+                <div style="display:flex; align-items:center; gap:1.2rem;">
+                    <div id="driver-avatar" style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, #00B74A, #2E7D32); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.5rem; font-weight:700; flex-shrink:0;"></div>
+                    <div style="flex:1;">
+                        <strong id="driver-name" style="font-size:1.1rem;"></strong>
+                        <p style="color:var(--text-secondary); font-size:0.85rem; margin:0.2rem 0;">Delivery Partner</p>
+                    </div>
+                    <a id="driver-call" href="#" style="display:flex; align-items:center; gap:0.5rem; padding:0.6rem 1.2rem; background:var(--primary-green); color:#fff; border-radius:10px; text-decoration:none; font-weight:600; font-size:0.9rem; transition:opacity 0.2s;">
+                        <i class="fa-solid fa-phone"></i> <span id="driver-phone-text"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Review Card (shown after delivery) -->
+            <div class="track-info" id="review-card" style="margin-top:1.5rem; display:none;">
+                <h3 style="margin-bottom:1rem;"><i class="fa-solid fa-star" style="color:#FFB000;"></i> Rate Your Experience</h3>
+                <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom:1rem;">How was your order from <strong id="review-kitchen-name"></strong>?</p>
+                <div class="star-rating" id="star-rating">
+                    <span class="star" data-val="1" onclick="setRating(1)">★</span>
+                    <span class="star" data-val="2" onclick="setRating(2)">★</span>
+                    <span class="star" data-val="3" onclick="setRating(3)">★</span>
+                    <span class="star" data-val="4" onclick="setRating(4)">★</span>
+                    <span class="star" data-val="5" onclick="setRating(5)">★</span>
+                </div>
+                <textarea id="review-comment" placeholder="Tell us how it was... (optional)" style="width:100%; margin-top:1rem; padding:0.8rem 1rem; border:1.5px solid var(--border-color); border-radius:10px; font-size:0.9rem; resize:vertical; min-height:80px; background:var(--card-bg); color:var(--text-primary); box-sizing:border-box;"></textarea>
+                <button onclick="submitReview()" style="margin-top:0.8rem; padding:0.7rem 2rem; background:var(--primary-green); color:#fff; border:none; border-radius:10px; font-weight:600; cursor:pointer; font-size:0.95rem;">
+                    <i class="fa-solid fa-paper-plane"></i> Submit Review
+                </button>
+                <p id="review-msg" style="margin-top:0.5rem; font-size:0.9rem;"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="track.js"></script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+
+

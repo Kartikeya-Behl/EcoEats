@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Menu - EcoEats</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .kitchen-hero { position:relative; height:220px; border-radius:0 0 24px 24px; overflow:hidden; margin-bottom:2rem; }
+        .kitchen-hero-img { width:100%; height:100%; object-fit:cover; }
+        .kitchen-hero-overlay { position:absolute; inset:0; background:linear-gradient(transparent 40%,rgba(0,0,0,.7)); display:flex; align-items:flex-end; padding:2rem 5%; }
+        .kitchen-hero-text h1 { color:#fff; font-size:2rem; margin:0; }
+        .kitchen-hero-text p { color:rgba(255,255,255,.85); margin:0.3rem 0 0; font-size:1rem; }
+        .kitchen-meta-bar { display:flex; gap:1.5rem; flex-wrap:wrap; padding:0 5%; margin-bottom:2rem; }
+        .meta-chip { display:flex; align-items:center; gap:0.4rem; background:var(--card-bg); padding:0.5rem 1rem; border-radius:10px; font-size:0.9rem; box-shadow:var(--shadow-sm); }
+        .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5rem; padding:0 5%; max-width:1200px; margin:0 auto 3rem; }
+        .menu-item { background:var(--card-bg); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform 0.2s,box-shadow 0.2s; }
+        .menu-item:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+        .menu-item-img { width:100%; height:180px; object-fit:cover; }
+        .menu-item-body { padding:1rem 1.2rem; }
+        .menu-item-body h4 { margin:0 0 0.3rem; font-size:1.05rem; }
+        .menu-price-row { display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem; }
+        .menu-original { text-decoration:line-through; color:var(--text-secondary); font-size:0.9rem; }
+        .menu-final { font-size:1.2rem; font-weight:700; color:var(--primary-green); }
+        .menu-discount { background:#FFEBEE; color:#C62828; padding:0.2rem 0.6rem; border-radius:6px; font-size:0.75rem; font-weight:600; }
+        .menu-qty { font-size:0.85rem; color:var(--text-secondary); margin-top:0.4rem; }
+        .menu-add-btn { width:100%; padding:0.6rem; border:none; background:var(--primary-green); color:#fff; font-weight:600; font-size:0.95rem; border-radius:10px; cursor:pointer; transition:opacity 0.2s; margin-top:0.8rem; }
+        .menu-add-btn:hover { opacity:0.9; }
+        .empty-menu { text-align:center; padding:4rem 2rem; color:var(--text-secondary); }
+        .empty-menu i { font-size:3rem; margin-bottom:1rem; display:block; }
+    </style>
+</head>
+<body>
+    <header class="navbar">
+        <a href="index.html" class="logo" style="text-decoration:none;">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <span class="logo-text">EcoEats</span>
+        </a>
+        <div class="nav-actions">
+            <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode"><i class="fa-solid fa-moon"></i></button>
+            <a href="index.html" class="btn btn-outline" style="text-decoration:none;"><i class="fa-solid fa-arrow-left"></i> Back</a>
+            <a href="cart.html" class="btn btn-primary" style="text-decoration:none;"><i class="fa-solid fa-cart-shopping"></i> Cart <span id="cart-count" style="background: var(--card-bg);color:var(--primary-green);padding:0.1rem 0.45rem;border-radius:50%;font-size:0.75rem;margin-left:0.3rem;">0</span></a>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <div class="kitchen-hero" id="kitchen-hero">
+        <div class="kitchen-hero-overlay">
+            <div class="kitchen-hero-text">
+                <h1 id="k-name">Loading...</h1>
+                <p id="k-cuisine"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meta chips -->
+    <div class="kitchen-meta-bar" id="k-meta"></div>
+
+    <!-- Menu grid -->
+    <h2 style="padding:0 5%; margin-bottom:1rem;" class="section-title">Full Menu</h2>
+    <div class="menu-grid" id="menu-grid"></div>
+
+    <script>
+    const kitchenId = new URLSearchParams(window.location.search).get('id');
+    if (!kitchenId) window.location.href = 'index.html';
+
+    const heroImages = {
+        1: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&q=80',
+        2: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=1200&q=80',
+        3: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=1200&q=80',
+        4: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=1200&q=80',
+        5: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80',
+        6: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=1200&q=80',
+        7: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=1200&q=80',
+        8: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=1200&q=80',
+        9: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=1200&q=80',
+        10:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&q=80'
+    };
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        updateCartCount();
+        try {
+            const res = await fetch(`http://localhost:5000/api/kitchen-menu/${kitchenId}`);
+            if (!res.ok) throw new Error();
+            const { kitchen, items } = await res.json();
+
+            // Hero
+            document.getElementById('k-name').innerText = kitchen.name;
+            document.getElementById('k-cuisine').innerText = kitchen.cuisine;
+            document.title = `${kitchen.name} - EcoEats`;
+            const heroUrl = heroImages[kitchen.id] || heroImages[1];
+            document.getElementById('kitchen-hero').style.background = `url('${heroUrl}') center/cover no-repeat`;
+            document.querySelector('.kitchen-hero-overlay').style.background = 'linear-gradient(transparent 30%, rgba(0,0,0,0.75))';
+
+            // Meta chips
+            document.getElementById('k-meta').innerHTML = `
+                <div class="meta-chip"><i class="fa-solid fa-location-dot" style="color:var(--primary-green);"></i> ${kitchen.location}</div>
+                <div class="meta-chip"><i class="fa-solid fa-utensils" style="color:var(--accent-orange);"></i> ${kitchen.cuisine}</div>
+                <div class="meta-chip"><i class="fa-solid fa-bowl-food" style="color:#5C6BC0;"></i> ${items.length} items available</div>
+            `;
+
+            // Menu items
+            if (items.length === 0) {
+                document.getElementById('menu-grid').innerHTML = '<div class="empty-menu"><i class="fa-solid fa-utensils"></i><h3>No items available right now</h3><p>Check back later for fresh deals!</p></div>';
+                return;
+            }
+
+            document.getElementById('menu-grid').innerHTML = items.map(item => {
+                const timeLeft = getTimeLeft(item.closing_time);
+                return `
+                <div class="menu-item">
+                    <img class="menu-item-img" src="${item.image_url}" alt="${item.food_name}" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600'">
+                    <div class="menu-item-body">
+                        <h4>${item.food_name}</h4>
+                        <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.3rem;">
+                            <span class="menu-discount">${item.discount_percentage}% OFF</span>
+                            <span style="font-size:0.8rem; color:var(--text-secondary);"><i class="fa-regular fa-clock"></i> ${timeLeft}</span>
+                        </div>
+                        <div class="menu-price-row">
+                            <div>
+                                <span class="menu-final">₹${item.finalPrice}</span>
+                                <span class="menu-original">₹${item.original_price}</span>
+                            </div>
+                        </div>
+                        <p class="menu-qty"><i class="fa-solid fa-box"></i> ${item.quantity} left</p>
+                        <button class="menu-add-btn" onclick='addToCart(${JSON.stringify({id: item.id, name: item.food_name, price: item.finalPrice, originalPrice: item.original_price, image: item.image_url, kitchenName: kitchen.name, kitchenLocation: kitchen.location, kitchenLat: kitchen.lat, kitchenLng: kitchen.lng, kitchenId: kitchen.id}).replace(/'/g, "&#39;")})'><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('menu-grid').innerHTML = '<div class="empty-menu"><i class="fa-solid fa-circle-exclamation"></i><h3>Could not load kitchen</h3><p>Please try again later.</p></div>';
+        }
+    });
+
+    function getTimeLeft(closingTime) {
+        const diff = new Date(closingTime) - new Date();
+        if (diff <= 0) return 'Expired';
+        const hrs = Math.floor(diff / 3600000);
+        const mins = Math.ceil((diff % 3600000) / 60000);
+        if (hrs > 0) return `${hrs}h ${mins}m left`;
+        return `${mins}m left`;
+    }
+
+    function addToCart(item) {
+        let cart = JSON.parse(localStorage.getItem('ecoeats_cart') || '[]');
+
+        // Single-restaurant enforcement
+        if (cart.length > 0 && cart[0].kitchenId !== item.kitchenId) {
+            if (!confirm(`Your cart has items from ${cart[0].kitchenName}. Replace with ${item.kitchenName}?`)) return;
+            cart = [];
+        }
+
+        const existing = cart.find(c => c.id === item.id);
+        if (existing) {
+            existing.cartQty++;
+        } else {
+            cart.push({ ...item, cartQty: 1 });
+        }
+
+        localStorage.setItem('ecoeats_cart', JSON.stringify(cart));
+        updateCartCount();
+
+        // Quick feedback animation
+        const btn = event.target.closest('.menu-add-btn');
+        btn.innerText = '✓ Added!';
+        btn.style.background = '#2E7D32';
+        setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart'; btn.style.background = ''; }, 1000);
+    }
+
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('ecoeats_cart') || '[]');
+        document.getElementById('cart-count').innerText = cart.reduce((s, c) => s + c.cartQty, 0);
+    }
+    </script>
+<script src="notifications.js"></script>
+</body>
+</html>
+
+
+
