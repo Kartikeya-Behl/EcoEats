@@ -2,7 +2,7 @@
 
 EcoEats is a robust full-stack marketplace connecting consumers with local cloud kitchens and restaurants that have surplus food. The platform aims to reduce global food waste by allowing kitchens to list perfectly good, unsold food at significant discounts, providing affordable meals to customers.
 
-## 🚀 Key Features
+## Key Features
 
 *   **Dynamic Surplus Marketplace:** Real-time visibility of discounted food deals, marked with urgency tags (e.g., "Closing Soon", "Only 2 left!").
 *   **Kitchen Dashboard:** Admin portal for registered partner kitchens to manage active listings, instantly bump or reduce surplus stock quantities, and view live order statuses.
@@ -12,7 +12,7 @@ EcoEats is a robust full-stack marketplace connecting consumers with local cloud
 *   **Global Dark Mode:** A complete UI toggle providing an accessible, sleek dark aesthetic across every component. 
 *   **Secure User Management:** End-to-end JWT authenticated login flows, encrypted passwords, self-delete account functionalities, and forgot password handling.
 
-## 🛠 Technology Stack
+## Technology Stack
 
 ### Frontend
 *   **HTML5 & CSS3:** Completely vanilla CSS, leveraging modern flexbox grids, UI variables for theme switching, and glassmorphism styling.
@@ -28,7 +28,7 @@ EcoEats is a robust full-stack marketplace connecting consumers with local cloud
 *   **JSON Web Tokens (JWT):** Protected REST execution on sensitive API routes.
 *   **Bcrypt.js:** Industry-standard salt/hash encryption for critical data points like passwords.
 
-## ⚙️ Installation & Usage
+## Installation & Usage
 
 ### Prerequisites
 Make sure you have Node JS installed globally on your machine.
@@ -52,5 +52,5 @@ Make sure you have Node JS installed globally on your machine.
 2. The REST API will mount on `http://localhost:5000` and statically serve the frontend documents. 
 3. Open `http://localhost:5000/index.html` in your web browser of choice.
 
-## 👨‍💻 Database Seeding
+## Database Seeding
 Upon initialization, the system automatically creates a volatile `ecoeats.db` file seeded with generic "Test User" data, 10 local Bangalore kitchen vendors (like *Spice Garden Kitchen*, *Tokyo Bites*), and generates mock surplus food inventory with dynamic closing countdowns.
